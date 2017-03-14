@@ -256,29 +256,33 @@ ASSET_MANAGER.downloadAll(function () {
 
     var gameEngine = new GameEngine();
 
-    var circleData = {circles: []};
-
     for (var i = 0; i < 20; i++) {
-        circle = new Circle(gameEngine);
-        //var randomColorIndex = getRandomIntBetween(0, 3);
-        //circle.color = randomColorIndex;
-        //gameEngine.addEntity(circle);
-
-        var loadCircle = new LoadCircle(circle.color, circle.radius, circle.velocity, circle.x, circle.y);
-        circleData.circles.push(loadCircle);
-
+        var circle = new Circle(gameEngine);
+        gameEngine.addEntity(circle);
     };
 
-    console.log(circleData);
+    var saveButton = document.getElementById("save").addEventListener("click", function(event) {
+        var circleData = {circles: []};
+        
+        for (var i = 0; i < gameEngine.entities.length; i++) {
+            var circle = gameEngine.entities[i];
+            var loadCircle = new LoadCircle(circle.color, circle.radius, circle.velocity, circle.x, circle.y);
+            circleData.circles.push(loadCircle);
+        }
+        
+        //save to server
+        socket.emit("save", {studentname: "Jason Thai", statename: "Spawn Circles", data: circleData});
+    });
 
-    //save to server
-    socket.emit("save", {studentname: "Jason Thai", statename: "Spawn Circles", data: circleData});
-
-    //tells server to send a load event back to us
-    socket.emit("load", { studentname: "Jason Thai", statename: "Spawn Circles"});
+    var loadButton = document.getElementById("load").addEventListener("click", function(event) {
+        //tells server to send a load event back to us
+        socket.emit("load", { studentname: "Jason Thai", statename: "Spawn Circles"});
+    });
 
     //listens for server load event and data being passed
     socket.on("load", function (data) {
+        gameEngine.removeAllEntities();
+
         console.log(data);
         var circles = data.data.circles;
         
